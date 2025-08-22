@@ -1,33 +1,59 @@
 <!DOCTYPE html>
 <html>
 <script>
-    function editProfile(){
-        document.querySelector('.container').style.display = 'none'
-        document.querySelector('.container-edit').style.display = 'block'
+  async function loadProfile() {
+    const res = await fetch('/get-profile');
+    const data = await res.json();
 
-        const name = document.querySelector('#name').textContent
-        document.querySelector('#input-name').value = name
+    document.querySelector('#name').textContent = data.name || "Not set";
+    document.querySelector('#email').textContent = data.email || "Not set";
+    document.querySelector('#interests').textContent = data.interests || "Not set";
+  }
 
-        const email = document.querySelector('#email').textContent
-        document.querySelector('#input-email').value = email
+  function editProfile() {
+    document.querySelector('.container').style.display = 'none';
+    document.querySelector('.container-edit').style.display = 'block';
 
-        const interests = document.querySelector('#interests').textContent
-        document.querySelector('#input-interests').value = interests
-    }
+    document.querySelector('#input-name').value = document.querySelector('#name').textContent;
+    document.querySelector('#input-email').value = document.querySelector('#email').textContent;
+    document.querySelector('#input-interests').value = document.querySelector('#interests').textContent;
+  }
 
-    function saveProfile(){
-        document.querySelector('#name').textContent = document.querySelector('#input-name').value
-        document.querySelector('#email').textContent = document.querySelector('#input-email').value
-        document.querySelector('#interests').textContent = document.querySelector('#input-interests').value
+  async function saveProfile() {
+    const updatedProfile = {
+      name: document.querySelector('#input-name').value,
+      email: document.querySelector('#input-email').value,
+      interests: document.querySelector('#input-interests').value,
+    };
 
-        document.querySelector('.container').style.display = 'block'
-        document.querySelector('.container-edit').style.display = 'none'
-    }
+    // call backend API
+    await fetch('/update-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedProfile)
+    });
+
+    // reload profile from server
+    await loadProfile();
+
+    document.querySelector('.container').style.display = 'block';
+    document.querySelector('.container-edit').style.display = 'none';
+  }
+
+  // load profile on page load
+  window.onload = loadProfile();
 </script>
+
 
 <head>
   <title>My Backend UI App</title>
-  <link rel="stylesheet" href="style.css">
+  <!--<link rel="stylesheet" href="style.css">-->
+  <style>
+    /* hide edit form initially */
+    .container-edit {
+      display: none;   
+    }
+  </style>
 </head>
 
 <body>
@@ -35,7 +61,7 @@
   <div class="container">
     <h1 id="header">User Profile</h1>
     <img src="profile-picture">
-    <hr/>
+    <br/>
     Name: <h3 id="name">Anna Smith</h3>
     <hr/>
     Email: <h3 id="email">anna.smith@example.com</h3>
@@ -49,7 +75,7 @@
   <div class="container-edit">
     <h1 id="header">User Profile</h1>
     <img src="profile-picture">
-    <hr/>
+    <br/>
     Name: <input id="input-name" type="text"/>
     <hr/>
     Email: <input id="input-email" type="email"/>
